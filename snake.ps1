@@ -142,16 +142,24 @@ function DrawSnake() {
   }
 }
 
-#draw the apple making sure not to place it over the snake
+#draw the apple
 function DrawApple() {
-  $applePos.X = (Get-Random -min 8 -max ($console.windowsize.width - 8))
-  # $applePos.y = (Get-Random -min 8 -max ($console.windowsize.height - 8))
-  $applePos.y = 22
   $console.cursorposition = $applePos
-  if ($applePos -eq $snakePos) {
-    DrawApple
-  } else {
-    Write-Host "@" -ForegroundColor Cyan
+  Write-Host "@" -ForegroundColor Cyan
+}
+
+#move the apple somewhere the snake is not.
+function MoveApple() {
+  $positionClear = $false;
+  while (!$positionClear) {
+    $applePos.X = (Get-Random -min 8 -max ($console.windowsize.width - 8))
+    $applePos.y = (Get-Random -min 8 -max ($console.windowsize.height - 8))
+    $positionClear = $true
+    for ($i = 0; $i -lt ($snake.count - 1); $i++) {
+      if ($applePos.x -eq $snake[$i][0] -and $applePos.y -eq $snake[$i][1]) {
+        $positionClear = $false
+      }
+    }
   }
 }
 
@@ -190,7 +198,7 @@ function MoveSnake {
   }
 }
 
-#check to see if snake hit wall, its own tail or an ate an apple
+#check to see if snake hit wall, its own tail and see if 
 function CheckForCollision() {
   if (
     ($snakePos.x -gt ($gameWidth - 2) + $borderSpacePerSide) -or 
@@ -199,23 +207,24 @@ function CheckForCollision() {
     ($snakePos.y -eq $borderSpacePerSide)
   ) {
     $script:gameFinished = $true
-    $currcoords.x = ($console.windowsize.width / 2) - 4
-    $currcoords.y = $console.windowsize.height / 2
-    $console.cursorposition = $currcoords
-    Write-Host "`Game Over" -ForegroundColor Red
   }
-  if ($snakePos -eq $applePos) {
-    $snake.add(@($snakePos.x, $snakePos.y))
-    DrawApple
+  for ($i = 0; $i -lt $snake.count - 1; $i++) {
+    if ($snakePos.x -eq $snake[$i][0] -and $snakePos.y -eq $snake[$i][1]) {
+      $script:gameFinished = $true
+    }
   }
 }
 
 #display game score 
 function displayScore() {
-  $currcoords.x = ($console.windowsize.width / 2) - 5
-  $currcoords.y = ($console.windowsize.height / 2) + 1
+  $currcoords.x = ($console.windowsize.width / 2) - 6
+  $currcoords.y = $console.windowsize.height / 2
   $console.cursorposition = $currcoords
-  Write-Host "score : $score" -ForegroundColor Red
+  Write-Host "[  Game Over  ]" -ForegroundColor Red
+  $currcoords.y++
+  $console.cursorposition = $currcoords
+  $score = ($snake.count - 1) * 10
+  Write-Host "  Score : $score " -ForegroundColor Red
 }
 
 # |---------------------------------|
@@ -240,6 +249,7 @@ if ($host.ui.rawui.windowsize.width -lt 110 -or $host.ui.rawui.windowsize.height
 #global Objects and variables defined 
 $currcoords = New-Object System.Management.Automation.Host.Coordinates
 $applePos = New-Object System.Management.Automation.Host.Coordinates
+MoveApple
 $snakePos = New-Object System.Management.Automation.Host.Coordinates
 $console = $host.ui.rawui
 $borderSpacePerSide = 3;
@@ -269,8 +279,9 @@ if ($startGame -ne "start") {
 DrawBorder
 $curSize = $console.CursorSize
 $console.CursorSize = 0
-DrawApple
 DrawSnake
+MoveApple
+DrawApple
 while (!$gameFinished) {
   #this next while loop unblocks the ReadKey command and only blocks when a key is pressed and waiting in the buffer to be processed
   while ([Console]::KeyAvailable) {
@@ -278,9 +289,14 @@ while (!$gameFinished) {
     $direction = $keyPressed.Key
   }
   MoveSnake
-  DrawSnake
   CheckForCollision
-  Start-Sleep -Milliseconds 100
+  if ($snakePos -eq $applePos) {
+    $snake.add(@($null, $null))
+    MoveApple
+    DrawApple
+  }
+  DrawSnake
+  Start-Sleep -Milliseconds 50
 }
 displayScore
 
@@ -289,5 +305,3 @@ $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
 $console.cursorposition = $currcoords
 $console.CursorSize = $curSize
-Write-Host $snake -NoNewline
-Write-Host "`n" $snake.count
