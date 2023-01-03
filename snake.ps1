@@ -28,112 +28,106 @@ function DisplayTitle() {
 }
 #display game instructions
 function DisplayInstructions() {
-  $verticalSpace = 12
-  $currcoords.x = ($console.windowsize.width) / 8
-  $currcoords.y = $verticalSpace
+  $marginFromTop = 11
+  $currcoords.x = ($console.windowsize.width) / 10
+  $currcoords.y = $marginFromTop
   $console.cursorposition = $currcoords
 
   # game instructions
   $instructions = @(
-    [PSCustomObject]@{
-      Number      = '[1]';
-      Instruction = " Start the game by typing the command [start]"
-    }
-    [PSCustomObject]@{
-      Number      = '[2]';
-      Instruction = " A snake will appear in the middle of the game area and will auto move in a direction "
-    }
-    [PSCustomObject]@{
-      Number      = '[3]';
-      Instruction = " Using the arrow keys guide the snake to the apple on the screen"
-    }
-    [PSCustomObject]@{
-      Number      = '[4]';
-      Instruction = " Everytime the snake eats an apple its tail will grow by 1 and a new apple will appear"
-    }
-    [PSCustomObject]@{
-      Number      = '[5]';
-      Instruction = " For every apple eaten you will get 10 points"
-    }
-    [PSCustomObject]@{
-      Number      = '[6]';
-      Instruction = " Get as many points as you can without hitting the walls or the snakes own tail"
-    }
-    [PSCustomObject]@{
-      Number      = '[7]';
-      Instruction = " If the snake hits a wall or its own tail you loose!"
-    }
-    [PSCustomObject]@{
-      Number      = '[8]';
-      Instruction = " At the end of the game you will be given a total score"
-    }
-    [PSCustomObject]@{
-      Number      = '[Hint]';
-      Instruction = " Running this game in full screen mode will make life easier for you :)"
-    }
+    @('[1]', " Start the game by typing the command [start]"),
+    @('[2]', " A snake will appear in the middle of the game area and will auto move in a direction"),
+    @('[3]', " Using the arrow keys guide the snake to the apple on the screen"),
+    @('[4]', " Everytime the snake eats an apple its tail will grow by 1 and a new apple will appear"),
+    @('[5]', " For every apple eaten you will get 10 points"),
+    @('[6]', " Get as many points as you can without hitting the walls or the snakes own tail"),
+    @('[7]', " If the snake hits a wall or its own tail you loose!"),
+    @('[8]', " At the end of the game you will be given a total score"),
+    @('[HINT]', " Start this game in a large window it will make life easier for you :)")
   )
+
   Write-Host "[ INSTRUCTIONS ]" -ForegroundColor Cyan
-  $currcoords.y += 1
-  for ($i = 0; $i -lt $instructions.length; $i++) {
+  $currcoords.y ++
+  for ($i = 0; $i -lt $instructions.count; $i++) {
     $currcoords.y += 2
     $console.cursorposition = $currcoords
-    Write-Host $instructions[$i].Number -NoNewline -ForegroundColor Cyan
-    Write-Host $instructions[$i].Instruction -ForegroundColor Yellow
+    Write-Host $instructions[$i][0] -NoNewline -ForegroundColor Cyan
+    Write-Host $instructions[$i][1] -ForegroundColor Yellow
   }
-  $currcoords.y += 5
+  $currcoords.y += 4
   $console.cursorposition = $currcoords
   Write-Host "Good Luck and have fun!" -ForegroundColor Green
 }
 # draws the walls of the game
 function DrawBorder() {
   Clear-Host
+  #nested function reduces duplicating write-hosts everytime
+  function BorderPiece($unicode) {
+    Write-Host -ForegroundColor red -NoNewline "$($unicode)"
+  }
   for ($i = 0; $i -lt $gameWidth; $i++) {
+
+    # position cursor for top border and corners
     $currcoords.x = $borderSpacePerSide + $i 
     $currcoords.y = $borderSpacePerSide
     $console.cursorposition = $currcoords
-  
-    if ($currcoords.x -eq $borderSpacePerSide -and $currcoords.y -eq $borderSpacePerSide) {
-      Write-Host "`u{2554}" -ForegroundColor red -NoNewline 
-    } elseif ($currcoords.x -eq $borderSpacePerSide + ($gameWidth - 1) -and $currcoords.y -eq $borderSpacePerSide) {
-      Write-Host -ForegroundColor red -NoNewline "`u{2557}"
-    } elseif ($currcoords.x -gt $borderSpacePerSide -and $currcoords.x -lt $borderSpacePerSide + ($gameWidth - 1)) {
-      Write-Host -ForegroundColor red -NoNewline "`u{2550}"
+
+    # assign variables to keep IF checks readable 
+    $topLeft = ($currcoords.x -eq $borderSpacePerSide -and $currcoords.y -eq $borderSpacePerSide)
+    $topRight = ($currcoords.x -eq $borderSpacePerSide + ($gameWidth - 1) -and $currcoords.y -eq $borderSpacePerSide)
+    $top = ($currcoords.x -gt $borderSpacePerSide -and $currcoords.x -lt $borderSpacePerSide + ($gameWidth - 1))
+
+    if ($topLeft) {
+      BorderPiece("`u{2554}")
+    } elseif ($topRight) {
+      BorderPiece("`u{2557}")
+    } elseif ($top) {
+      BorderPiece("`u{2550}")
     }
 
+    # position cursor for the bottom border and corners
     $currcoords.y = $borderSpacePerSide + ($gameHeight - 1)
     $console.cursorposition = $currcoords
-    if ($currcoords.x -eq $borderSpacePerSide -and $currcoords.y -eq $borderSpacePerSide + ($gameHeight - 1)) {
-      Write-Host -ForegroundColor red -NoNewline "`u{255A}"
-    } elseif ($currcoords.x -eq $borderSpacePerSide + ($gameWidth - 1) -and $currcoords.y -eq $borderSpacePerSide + ($gameHeight - 1)) {
-      Write-Host -ForegroundColor red -NoNewline "`u{255D}"
-    } elseif ($currcoords.x -gt $borderSpacePerSide -and $currcoords.x -lt $borderSpacePerSide + ($gameWidth - 1)) {
-      Write-Host -ForegroundColor red -NoNewline "`u{2550}"
+
+    # assign variables to keep IF checks readable 
+    $bottomLeft = ($currcoords.x -eq $borderSpacePerSide -and $currcoords.y -eq $borderSpacePerSide + ($gameHeight - 1))
+    $bottomRight = ($currcoords.x -eq $borderSpacePerSide + ($gameWidth - 1) -and $currcoords.y -eq $borderSpacePerSide + ($gameHeight - 1))
+    $bottom = ($currcoords.x -gt $borderSpacePerSide -and $currcoords.x -lt $borderSpacePerSide + ($gameWidth - 1)) 
+
+    if ($bottomLeft) {
+      BorderPiece("`u{255A}")
+    } elseif ($bottomRight) {
+      BorderPiece("`u{255D}")
+    } elseif ($bottom) {
+      BorderPiece("`u{2550}")
     }
-  
   }
+
+  #left and right borders to finish off
   for ($i = $borderSpacePerSide + 1 ; $i -lt $borderSpacePerSide + ($gameHeight - 1); $i++) {
     $currcoords.x = $borderSpacePerSide
     $currcoords.y = $i
     $console.cursorposition = $currcoords
-    Write-Host -ForegroundColor red -NoNewline "`u{2551}"
+    BorderPiece("`u{2551}")
     $currcoords.x = $borderSpacePerSide + ($gameWidth - 1)
     $console.cursorposition = $currcoords
-    Write-Host -ForegroundColor red -NoNewline "`u{2551}"
+    BorderPiece("`u{2551}")
   }
   Write-Host "`n"
 }
 
-#draw the snake and remove the last position
+#position segments of snake and draw snake
 function DrawSnake() {
   # move the snake segments along
   for ($i = 0; $i -lt ($snake.count - 1); $i++) {
     $snake[$i][0] = $snake[$i + 1][0]
     $snake[$i][1] = $snake[$i + 1][1]
   }
-  # Set the last segment of the tail to the current position
+  # Set the last segment to the current position
   $snake[-1][0] = $snakePos.x
   $snake[-1][1] = $snakePos.y
 
+  #draw the snake
   for ($i = 0; $i -lt $snake.count; $i++) {
     $snakePos.x = $snake[$i][0]
     $snakePos.y = $snake[$i][1]
@@ -165,7 +159,6 @@ function MoveApple() {
 
 #move the snake position and remove the old snake position from screen
 function MoveSnake {
-  #remove segment
   $snakePos.x = $snake[0][0]
   $snakePos.y = $snake[0][1] 
   $console.cursorposition = $snakePos
@@ -198,16 +191,18 @@ function MoveSnake {
   }
 }
 
-#check to see if snake hit wall, its own tail and see if 
+#check to see if snake hit a wall or its own body
 function CheckForCollision() {
-  if (
-    ($snakePos.x -gt ($gameWidth - 2) + $borderSpacePerSide) -or 
-    ($snakePos.x -eq $borderSpacePerSide) -or
-    ($snakePos.y -gt ($gameHeight - 2) + $borderSpacePerSide) -or
-    ($snakePos.y -eq $borderSpacePerSide)
-  ) {
+  #wall
+  $hitLeft = ($snakePos.x -eq $borderSpacePerSide)
+  $hitRight = ($snakePos.x -gt ($gameWidth - 2) + $borderSpacePerSide)
+  $hitTop = ($snakePos.y -eq $borderSpacePerSide)
+  $hitBottom = ($snakePos.y -gt ($gameHeight - 2) + $borderSpacePerSide)
+
+  if ( $hitRight -or $hitLeft -or $hitBottom -or $hitTop) {
     $script:gameFinished = $true
   }
+  #body
   for ($i = 0; $i -lt $snake.count - 1; $i++) {
     if ($snakePos.x -eq $snake[$i][0] -and $snakePos.y -eq $snake[$i][1]) {
       $script:gameFinished = $true
@@ -233,7 +228,6 @@ function displayScore() {
 # |---------------------------------|
 # |---------------------------------|
 
-
 # ensure game is ran only in a powershell core window no VSC, CMD or PS5 allowed
 if (($env:TERM_PROGRAM -eq "vscode") -or !($PSEdition -eq "core")) {
   Write-Host "`nThis script needs to be ran in a Powershell core window`n" -ForegroundColor Red
@@ -241,15 +235,14 @@ if (($env:TERM_PROGRAM -eq "vscode") -or !($PSEdition -eq "core")) {
 }
 
 #check min window size
-if ($host.ui.rawui.windowsize.width -lt 110 -or $host.ui.rawui.windowsize.height -lt 45) {
-  Write-Host "`n this game requires a min window size of 100h x 50w - please increase window size to play this game`n" -ForegroundColor Red
+if ($host.ui.rawui.windowsize.width -lt 105 -or $host.ui.rawui.windowsize.height -lt 40) {
+  Write-Host "`n this game requires a min window size of 105h x 40w - please increase window size to play this game`n" -ForegroundColor Red
   exit
 }
 
 #global Objects and variables defined 
 $currcoords = New-Object System.Management.Automation.Host.Coordinates
 $applePos = New-Object System.Management.Automation.Host.Coordinates
-MoveApple
 $snakePos = New-Object System.Management.Automation.Host.Coordinates
 $console = $host.ui.rawui
 $borderSpacePerSide = 3;
