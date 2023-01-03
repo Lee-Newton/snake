@@ -125,45 +125,28 @@ function DrawBorder() {
 
 #draw the snake and remove the last position
 function DrawSnake() {
-  # $console.cursorposition = $snakePos
-  # Write-Host " " -ForegroundColor green -BackgroundColor green
- 
-  switch ($direction) {
-    UpArrow {
-      $snakePos.y += $snake.count
-      $console.cursorposition = $snakePos
-      Write-Host " "
-      $snakePos.y -= $snake.count
-      break 
-    }
-    DownArrow {
-      $snakePos.y -= $snake.count 
-      $console.cursorposition = $snakePos
-      Write-Host " "
-      $snakePos.y += $snake.count
-      break 
-    }
-    LeftArrow {
-      $snakePos.x += $snake.count 
-      $console.cursorposition = $snakePos
-      Write-Host " "
-      $snakePos.x -= $snake.count
-      break 
-    }
-    RightArrow {
-      $snakePos.x -= $snake.count 
-      $console.cursorposition = $snakePos
-      Write-Host " "
-      $snakePos.x += $snake.count
-      break 
-    }
+  # move the snake segments along
+  for ($i = 0; $i -lt ($snake.count - 1); $i++) {
+    $snake[$i][0] = $snake[$i + 1][0]
+    $snake[$i][1] = $snake[$i + 1][1]
+  }
+  # Set the last segment of the tail to the current position
+  $snake[-1][0] = $snakePos.x
+  $snake[-1][1] = $snakePos.y
+
+  for ($i = 0; $i -lt $snake.count; $i++) {
+    $snakePos.x = $snake[$i][0]
+    $snakePos.y = $snake[$i][1]
+    $console.cursorposition = $snakePos
+    Write-Host " " -ForegroundColor green -BackgroundColor green
   }
 }
 
 #draw the apple making sure not to place it over the snake
 function DrawApple() {
   $applePos.X = (Get-Random -min 8 -max ($console.windowsize.width - 8))
-  $applePos.y = (Get-Random -min 8 -max ($console.windowsize.height - 8))
+  # $applePos.y = (Get-Random -min 8 -max ($console.windowsize.height - 8))
+  $applePos.y = 22
   $console.cursorposition = $applePos
   if ($applePos -eq $snakePos) {
     DrawApple
@@ -172,34 +155,42 @@ function DrawApple() {
   }
 }
 
-#move the snake
+#move the snake position and remove the old snake position from screen
 function MoveSnake {
+  #remove segment
+  $snakePos.x = $snake[0][0]
+  $snakePos.y = $snake[0][1] 
+  $console.cursorposition = $snakePos
+  Write-Host " "
   switch ($direction) {
-    UpArrow { $snakePos.y --; break }
-    DownArrow { $snakePos.y ++; break }
-    LeftArrow { $snakePos.x --; break }
-    RightArrow { 
+    UpArrow { 
+      $snakePos.y = $snake[-1][1]
+      $snakePos.x = $snake[-1][0]
+      $snakePos.y--
+      break 
+    }
+    DownArrow { 
+      $snakePos.y = $snake[-1][1]
+      $snakePos.x = $snake[-1][0]
+      $snakePos.y++
+      break 
+    }
+    LeftArrow { 
       $snakePos.x = $snake[-1][0]
       $snakePos.y = $snake[-1][1]
-      $console.cursorposition = $snakePos
-      Write-Host " "
-      $snakePos.x = $snake[0][0]
-      $snakePos.y = $snake[0][1]
+      $snakePos.x--
+      break 
+    }
+    RightArrow {
+      $snakePos.x = $snake[-1][0]
+      $snakePos.y = $snake[-1][1]
       $snakePos.x++
-      $console.cursorposition = $snakePos
-      Write-Host " " -ForegroundColor green -BackgroundColor green
-      for ($i = 0; $i -lt ($snake.count - 1); $i++) {
-        $snake[$i][0] = $snake[$i + 1][0]
-        $snake[$i][1] = $snake[$i + 1][1]
-      }
       break 
     }
   }
-  Start-Sleep -Milliseconds 100
-  # DrawSnake
 }
 
-#check to see if snake hit wall or its own tail
+#check to see if snake hit wall, its own tail or an ate an apple
 function CheckForCollision() {
   if (
     ($snakePos.x -gt ($gameWidth - 2) + $borderSpacePerSide) -or 
@@ -214,7 +205,7 @@ function CheckForCollision() {
     Write-Host "`Game Over" -ForegroundColor Red
   }
   if ($snakePos -eq $applePos) {
-    $snake.add(@(1, 2))
+    $snake.add(@($snakePos.x, $snakePos.y))
     DrawApple
   }
 }
@@ -278,9 +269,8 @@ if ($startGame -ne "start") {
 DrawBorder
 $curSize = $console.CursorSize
 $console.CursorSize = 0
-# DrawSnake
 DrawApple
-
+DrawSnake
 while (!$gameFinished) {
   #this next while loop unblocks the ReadKey command and only blocks when a key is pressed and waiting in the buffer to be processed
   while ([Console]::KeyAvailable) {
@@ -288,15 +278,16 @@ while (!$gameFinished) {
     $direction = $keyPressed.Key
   }
   MoveSnake
+  DrawSnake
   CheckForCollision
+  Start-Sleep -Milliseconds 100
 }
-
 displayScore
-$snake[-1][0]
-$snake[0][0]
-Write-Host $snake -NoNewline
+
 #keep cmd line at bottom of window for end of game
 $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
 $console.cursorposition = $currcoords
 $console.CursorSize = $curSize
+Write-Host $snake -NoNewline
+Write-Host "`n" $snake.count
