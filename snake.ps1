@@ -36,14 +36,15 @@ function DisplayInstructions() {
   # game instructions
   $instructions = @(
     @('[1]', " Start the game by typing the command [start]"),
-    @('[2]', " A snake will appear in the middle of the game area and will auto move in a direction"),
-    @('[3]', " Using the arrow keys guide the snake to the apple on the screen"),
-    @('[4]', " Everytime the snake eats an apple its tail will grow by 1 and a new apple will appear"),
-    @('[5]', " For every apple eaten you will get 10 points"),
-    @('[6]', " Get as many points as you can without hitting the walls or the snakes own tail"),
-    @('[7]', " If the snake hits a wall or its own tail you loose!"),
-    @('[8]', " At the end of the game you will be given a total score"),
-    @('[HINT]', " Start this game in a large window it will make life easier for you :)")
+    @('[2]', " A 3 second count down timer will begin - Get ready!"),
+    @('[3]', " A moving snake will appear in the centre of the screen once the timer expires"),
+    @('[4]', " Using the arrow keys, guide the snake to the apple on the screen"),
+    @('[5]', " Everytime the snake eats an apple its tail will grow by 1 and a new apple will appear"),
+    @('[6]', " For every apple eaten you gain 10 points"),
+    @('[7]', " Get as many points as you can without hitting a wall or the snakes tail"),
+    @('[8]', " If the snake hits a wall or its tail you loose!"),
+    @('[9]', " At the end of the game you will be given a total score"),
+    @('[NOTE]', " System Sound has been set to 50%. Mute your system now for a quite game")
   )
 
   Write-Host "[ INSTRUCTIONS ]" -ForegroundColor Cyan
@@ -61,7 +62,6 @@ function DisplayInstructions() {
 # draws the walls of the game
 function DrawBorder() {
   Clear-Host
-  #nested function reduces duplicating write-hosts everytime
   function BorderPiece($unicode) {
     Write-Host -ForegroundColor red -NoNewline "$($unicode)"
   }
@@ -220,6 +220,19 @@ function displayScore() {
   $console.cursorposition = $currcoords
   $score = ($snake.count - 1) * 10
   Write-Host "  Score : $score " -ForegroundColor Red
+  [console]::beep(630, 40) 
+  [console]::beep(500, 100)
+  [console]::beep(350, 200)
+  [console]::beep(150, 350) 
+  (New-Object -ComObject Sapi.spvoice).speak(" Game Over. Your score was $($score)") > null
+}
+
+#set system volume level
+function SetSystemVolume($volume) { 
+  $wshShell = New-Object -com wscript.shell
+  1..50 | ForEach-Object { $wshShell.SendKeys([char]174) }
+  $volume = $volume / 2
+  1..$volume | ForEach-Object { $wshShell.SendKeys([char]175) }
 }
 
 # |---------------------------------|
@@ -262,6 +275,7 @@ DisplayInstructions
 $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
 $console.cursorposition = $currcoords
+SetSystemVolume -Volume 50
 $startGame = $(Write-Host "Command : " -NoNewline -ForegroundColor Cyan; Read-Host)
 
 if ($startGame -ne "start") {
@@ -275,6 +289,7 @@ $console.CursorSize = 0
 DrawSnake
 MoveApple
 DrawApple
+
 while (!$gameFinished) {
   #this next while loop unblocks the ReadKey command and only blocks when a key is pressed and waiting in the buffer to be processed
   while ([Console]::KeyAvailable) {
@@ -285,6 +300,7 @@ while (!$gameFinished) {
   CheckForCollision
   if ($snakePos -eq $applePos) {
     $snake.add(@($null, $null))
+    [console]::beep(450, 20)
     MoveApple
     DrawApple
   }
