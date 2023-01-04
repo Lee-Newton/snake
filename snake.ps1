@@ -59,6 +59,7 @@ function DisplayInstructions() {
   $console.cursorposition = $currcoords
   Write-Host "Good Luck and have fun!" -ForegroundColor Green
 }
+
 # draws the walls of the game
 function DrawBorder() {
   Clear-Host
@@ -114,6 +115,21 @@ function DrawBorder() {
     BorderPiece("`u{2551}")
   }
   Write-Host "`n"
+}
+
+# display countdown timer 
+function countDownTimer {
+  $countdown = 3
+  $currcoords.x = [math]::Round($console.windowsize.width / 2)
+  $currcoords.y = [math]::Round($console.windowsize.height / 2)
+  function Timer($seconds) {
+    $console.cursorposition = $currcoords
+    Write-Host "$seconds" -ForegroundColor green
+    $voice.speak("$($seconds)") > null
+  }
+  for ($i = 0; $i -lt $countdown; $i++) {
+    Timer($countdown - $i)
+  }
 }
 
 #position segments of snake and draw snake
@@ -214,17 +230,19 @@ function CheckForCollision() {
 function displayScore() {
   $currcoords.x = ($console.windowsize.width / 2) - 6
   $currcoords.y = $console.windowsize.height / 2
+  [console]::beep(630, 40) 
+  [console]::beep(500, 100)
+  [console]::beep(350, 200)
+  [console]::beep(150, 350)
   $console.cursorposition = $currcoords
   Write-Host "[  Game Over  ]" -ForegroundColor Red
   $currcoords.y++
   $console.cursorposition = $currcoords
   $score = ($snake.count - 1) * 10
   Write-Host "  Score : $score " -ForegroundColor Red
-  [console]::beep(630, 40) 
-  [console]::beep(500, 100)
-  [console]::beep(350, 200)
-  [console]::beep(150, 350) 
-  (New-Object -ComObject Sapi.spvoice).speak(" Game Over. Your score was $($score)") > null
+  Start-Sleep -Milliseconds 1000 
+  $voice.speak(" Game Over. Your score was $($score)") > null
+
 }
 
 #set system volume level
@@ -267,7 +285,7 @@ $snakePos.y = [math]::Round($console.windowsize.height / 2)
 $snake = [System.Collections.Generic.List[array]]@($snakePos.x, $snakePos.y)
 $direction = "RightArrow"
 $gameFinished = $false
-
+$voice = New-Object -ComObject Sapi.spvoice
 DisplayTitle
 DisplayInstructions
 
@@ -283,9 +301,10 @@ if ($startGame -ne "start") {
   exit
 }
 
-DrawBorder
 $curSize = $console.CursorSize
 $console.CursorSize = 0
+DrawBorder
+countDownTimer
 DrawSnake
 MoveApple
 DrawApple
