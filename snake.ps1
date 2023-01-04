@@ -35,12 +35,12 @@ function DisplayInstructions() {
 
   # game instructions
   $instructions = @(
-    @('[1]', " Start the game by typing the command [start]"),
+    @('[1]', " Start the game by typing your name or exit the game by typing exit"),
     @('[2]', " A 3 second count down timer will begin - Get ready!"),
     @('[3]', " A moving snake will appear in the centre of the screen once the timer expires"),
     @('[4]', " Using the arrow keys, guide the snake to the apple on the screen"),
     @('[5]', " Everytime the snake eats an apple its tail will grow by 1 and a new apple will appear"),
-    @('[6]', " For every apple eaten you gain 10 points"),
+    @('[6]', " For every apple eaten you gain 50 points"),
     @('[7]', " Get as many points as you can without hitting a wall or the snakes tail"),
     @('[8]', " If the snake hits a wall or its tail you loose!"),
     @('[9]', " At the end of the game you will be given a total score"),
@@ -238,10 +238,10 @@ function displayScore() {
   Write-Host "[  Game Over  ]" -ForegroundColor Red
   $currcoords.y++
   $console.cursorposition = $currcoords
-  $score = ($snake.count - 1) * 10
+  $score = ($snake.count - 1) * 50
   Write-Host "  Score : $score " -ForegroundColor Red
   Start-Sleep -Milliseconds 1000 
-  $voice.speak(" Game Over. Your score was $($score)") > null
+  $voice.speak(" Game Over $($playerName). Your score was $($score)") > null
 
 }
 
@@ -267,7 +267,7 @@ if (($env:TERM_PROGRAM -eq "vscode") -or !($PSEdition -eq "core")) {
 
 #check min window size
 if ($host.ui.rawui.windowsize.width -lt 105 -or $host.ui.rawui.windowsize.height -lt 40) {
-  Write-Host "`n this game requires a min window size of 105h x 40w - please increase window size to play this game`n" -ForegroundColor Red
+  Write-Host "`n this game requires a min window size of 105w x 40h - please increase window size to play this game`n" -ForegroundColor Red
   exit
 }
 
@@ -282,7 +282,7 @@ $gameHeight = [math]::Round($console.windowsize.height - ($borderSpacePerSide * 
 $score = 0
 $snakePos.X = [math]::Round($console.windowsize.width / 2)
 $snakePos.y = [math]::Round($console.windowsize.height / 2)
-$snake = [System.Collections.Generic.List[array]]@($snakePos.x, $snakePos.y)
+$snake = [Collections.Generic.List[array]]@($snakePos.x, $snakePos.y)
 $direction = "RightArrow"
 $gameFinished = $false
 $voice = New-Object -ComObject Sapi.spvoice
@@ -294,10 +294,10 @@ $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
 $console.cursorposition = $currcoords
 SetSystemVolume -Volume 50
-$startGame = $(Write-Host "Command : " -NoNewline -ForegroundColor Cyan; Read-Host)
+$playerName = $(Write-Host "Name : " -NoNewline -ForegroundColor Cyan; Read-Host)
 
-if ($startGame -ne "start") {
-  Write-Host "`nInvalid command - game aborted! `n" -ForegroundColor Red
+if ($playerName -eq "exit") {
+  Write-Host "`ngame aborted - Goodbye `n" -ForegroundColor Red
   exit
 }
 
