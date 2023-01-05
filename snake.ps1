@@ -108,7 +108,7 @@ function DisplayInstructions() {
     @('[7]', " Get as many points as you can without hitting a wall or the snakes tail"),
     @('[8]', " If the snake hits a wall or its tail you loose!"),
     @('[9]', " At the end of the game you will be given a total score"),
-    @('[NOTE]', " System Sound has been set to 50%. Mute your system now for a quite game")
+    @('[NOTE]', " System Sound has been set to 50%. Mute your system now for a quiet game")
   )
 
   Write-Host "[ INSTRUCTIONS ]" -ForegroundColor Cyan
