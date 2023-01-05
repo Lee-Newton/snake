@@ -311,6 +311,8 @@ function displayScore() {
   Start-Sleep -Milliseconds 1000 
   if ($OS.contains('Windows')) {
     $voice.speak(" Game Over $($playerName). Your score was $($score)") > null
+  } elseif ($OS.contains('Darwin')) {
+    say " Game Over $($playerName). Your score was $($score)"
   }
 
 }
