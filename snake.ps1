@@ -366,9 +366,10 @@ if ($playerName -eq "exit") {
   Write-Host "`ngame aborted - Goodbye `n" -ForegroundColor Red
   exit
 }
-
-$curSize = $console.CursorSize
-$console.CursorSize = 0
+if ($OS.contains('Windows')) {
+  $curSize = $console.CursorSize
+  $console.CursorSize = 0
+}
 DrawBorder
 countDownTimer
 DrawSnake
@@ -399,5 +400,7 @@ displayScore
 #keep cmd line at bottom of window for end of game
 $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
-$console.cursorposition = $currcoords
-$console.CursorSize = $curSize
+if ($OS.contains('Windows')) {
+  $console.cursorposition = $currcoords
+  $console.CursorSize = $curSize
+}
