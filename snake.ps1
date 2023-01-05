@@ -347,8 +347,10 @@ $gameFinished = $false
 $voice = New-Object -ComObject Sapi.spvoice
 DisplayTitle
 DisplayInstructions
-[Audio]::Mute = $false
-[Audio]::Volume = 0.50
+if ($OS.contains('Windows')) {
+  [Audio]::Mute = $false
+  [Audio]::Volume = 0.50
+}
 
 # place command line at bottom of terminal window and wait for start command
 $currcoords.x = 1
