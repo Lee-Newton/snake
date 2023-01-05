@@ -4,8 +4,19 @@
 # |              By Lee Newton                  |
 # |---------------------------------------------|
 
+# ensure game is ran only in a powershell core window no VSC, CMD or PS5 allowed
+if (($env:TERM_PROGRAM -eq "vscode") -or !($PSEdition -eq "core")) {
+  Write-Host "`nThis script needs to be ran in a Powershell core window`n" -ForegroundColor Red
+  exit
+}
 
-# The following Type is to access the Core Audio API. Original code use SendKeys but Mac users were reporting issues with this so the following boiler plate has been coppied, I have no knowledge as of yet of any support for automation hence this boilerplate code. skip along as this is only so I can access static classes like  'Volume' and 'Mute
+#check min window size
+if ($host.ui.rawui.windowsize.width -lt 105 -or $host.ui.rawui.windowsize.height -lt 40) {
+  Write-Host "`n this game requires a min window size of 105w x 40h - please increase window size to play this game`n" -ForegroundColor Red
+  exit
+}
+
+# The following TypeDef is to access the Core Audio API. Original code used SendKeys but some users were reporting issues with this so the following boiler plate has been coppied, I have no knowledge as of yet of any support for automation hence this boilerplate code. skip along as this is only so I can access static classes like  'Volume' and 'Mute
 Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
 [Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
@@ -55,11 +66,8 @@ public class Audio
         set { Marshal.ThrowExceptionForHR(Vol().SetMute(value, System.Guid.Empty)); }
     }
 }
+
 '@
-[Audio]::Mute = $false
-[Audio]::Volume = 0.50
-
-
 #display game title
 function DisplayTitle() {
   Clear-Host
@@ -315,19 +323,7 @@ function SetSystemVolume($volume) {
 # |---------------------------------|
 # |---------------------------------|
 
-# ensure game is ran only in a powershell core window no VSC, CMD or PS5 allowed
-if (($env:TERM_PROGRAM -eq "vscode") -or !($PSEdition -eq "core")) {
-  Write-Host "`nThis script needs to be ran in a Powershell core window`n" -ForegroundColor Red
-  exit
-}
-
-#check min window size
-if ($host.ui.rawui.windowsize.width -lt 105 -or $host.ui.rawui.windowsize.height -lt 40) {
-  Write-Host "`n this game requires a min window size of 105w x 40h - please increase window size to play this game`n" -ForegroundColor Red
-  exit
-}
-
-#global Objects and variables defined 
+#global Objects and variables defined
 $currcoords = New-Object System.Management.Automation.Host.Coordinates
 $applePos = New-Object System.Management.Automation.Host.Coordinates
 $snakePos = New-Object System.Management.Automation.Host.Coordinates
@@ -344,6 +340,8 @@ $gameFinished = $false
 $voice = New-Object -ComObject Sapi.spvoice
 DisplayTitle
 DisplayInstructions
+[Audio]::Mute = $false
+[Audio]::Volume = 0.50
 
 # place command line at bottom of terminal window and wait for start command
 $currcoords.x = 1
