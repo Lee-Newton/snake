@@ -189,7 +189,9 @@ function countDownTimer {
   function Timer($seconds) {
     $console.cursorposition = $currcoords
     Write-Host "$seconds" -ForegroundColor green
-    $voice.speak("$($seconds)") > null
+    if ($OS.contains('Windows')) {
+      $voice.speak("$($seconds)") > null
+    }
   }
   for ($i = 0; $i -lt $countdown; $i++) {
     Timer($countdown - $i)
@@ -294,10 +296,12 @@ function CheckForCollision() {
 function displayScore() {
   $currcoords.x = ($console.windowsize.width / 2) - 6
   $currcoords.y = $console.windowsize.height / 2
-  [console]::beep(630, 40) 
-  [console]::beep(500, 100)
-  [console]::beep(350, 200)
-  [console]::beep(150, 350)
+  if ($OS.contains('Windows')) {
+    [console]::beep(630, 40) 
+    [console]::beep(500, 100)
+    [console]::beep(350, 200)
+    [console]::beep(150, 350)
+  }
   $console.cursorposition = $currcoords
   Write-Host "[  Game Over  ]" -ForegroundColor Red
   $currcoords.y++
@@ -305,7 +309,9 @@ function displayScore() {
   $score = ($snake.count - 1) * 50
   Write-Host "  Score : $score " -ForegroundColor Red
   Start-Sleep -Milliseconds 1000 
-  $voice.speak(" Game Over $($playerName). Your score was $($score)") > null
+  if ($OS.contains('Windows')) {
+    $voice.speak(" Game Over $($playerName). Your score was $($score)") > null
+  }
 
 }
 
@@ -328,6 +334,7 @@ $currcoords = New-Object System.Management.Automation.Host.Coordinates
 $applePos = New-Object System.Management.Automation.Host.Coordinates
 $snakePos = New-Object System.Management.Automation.Host.Coordinates
 $console = $host.ui.rawui
+$OS = $PSVersionTable.OS
 $borderSpacePerSide = 3;
 $gameWidth = [math]::Round($console.windowsize.width - ($borderSpacePerSide * 2) )
 $gameHeight = [math]::Round($console.windowsize.height - ($borderSpacePerSide * 2) )
@@ -347,7 +354,6 @@ DisplayInstructions
 $currcoords.x = 1
 $currcoords.y = [math]::Round($console.windowsize.height - 2)
 $console.cursorposition = $currcoords
-# SetSystemVolume -Volume 50
 $playerName = $(Write-Host "Name : " -NoNewline -ForegroundColor Cyan; Read-Host)
 
 if ($playerName -eq "exit") {
@@ -373,7 +379,9 @@ while (!$gameFinished) {
   CheckForCollision
   if ($snakePos -eq $applePos) {
     $snake.add(@($null, $null))
-    [console]::beep(450, 20)
+    if ($OS.contains('Windows')) {
+      [console]::beep(450, 20)
+    }
     MoveApple
     DrawApple
   }
