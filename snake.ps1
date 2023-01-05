@@ -191,6 +191,8 @@ function countDownTimer {
     Write-Host "$seconds" -ForegroundColor green
     if ($OS.contains('Windows')) {
       $voice.speak("$($seconds)") > null
+    } elseif ($OS.contains('Darwin')) {
+      say "$($seconds)"
     }
   }
   for ($i = 0; $i -lt $countdown; $i++) {
