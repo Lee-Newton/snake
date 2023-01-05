@@ -17,7 +17,7 @@ if ($host.ui.rawui.windowsize.width -lt 105 -or $host.ui.rawui.windowsize.height
 }
 
 # The following TypeDef is to access the Core Audio API. Original code used SendKeys but some users were reporting issues with this so the following boiler plate has been coppied, I have no knowledge as of yet of any support for automation hence this boilerplate code. skip along as this is only so I can access static classes like  'Volume' and 'Mute
-Add-Type -TypeDefinition -PassThru @'
+Add-Type -TypeDefinition @'
 using System.Runtime.InteropServices;
 [Guid("5CDF2C82-841E-4546-9722-0CF74078229A"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 interface IAudioEndpointVolume
